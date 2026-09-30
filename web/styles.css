@@ -152,7 +152,7 @@ a { color: inherit; }
   border-bottom: 4px double var(--magenta);
 }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 72px; }
-.logo { font: 900 1.4rem/1 var(--font-head); text-transform: uppercase; letter-spacing: -.03em; text-decoration: none; text-shadow: 2px 2px 0 var(--purple), 4px 4px 0 var(--magenta); }
+.logo { font: 900 1.4rem/1 var(--font-head); text-transform: uppercase; letter-spacing: -.01em; word-spacing: .2em; text-decoration: none; text-shadow: 2px 2px 0 var(--purple), 4px 4px 0 var(--magenta); }
 .logo span { color: var(--yellow); }
 .nav { display: none; gap: .5rem; }
 .nav a {
@@ -208,7 +208,8 @@ section { position: relative; overflow: hidden; padding: 112px 0; }
 /* stats — all five accents */
 .stats { padding-top: 140px; }
 .stats-grid { display: grid; gap: 28px; grid-template-columns: repeat(2, 1fr); position: relative; z-index: 20; }
-@media (min-width: 900px) { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 40px 32px; } }
+@media (min-width: 900px) { .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 40px 32px; } }
+@media (max-width: 899px) { .stat:nth-child(3) { grid-column: 1 / -1; } }
 .stat {
   --c: var(--magenta); --b: var(--yellow);
   background: rgba(45, 27, 78, .85); backdrop-filter: blur(4px);

@@ -3,5 +3,5 @@ window.PORTFOLIO = {
   NAME: "Fitri",
   // Leave a link empty ("") to hide its button.
   GITHUB: "https://github.com/fitriyananurill/GenAI-Portfolio",
-  LINKEDIN: "",
+  LINKEDIN: "https://www.linkedin.com/in/fitriyananurilkh",
 };
