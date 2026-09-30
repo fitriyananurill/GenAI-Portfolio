@@ -26,7 +26,7 @@
         <a href="#stack">Stack</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a class="btn btn-primary header-cta" data-space href="#projects">Open demos</a>
+      <a class="btn btn-primary header-cta" href="#projects">Try demos</a>
     </div>
   </header>
 
@@ -100,9 +100,9 @@
             <div class="card-head"><span class="card-num">P1</span><span class="card-icon wiggle" aria-hidden="true">🖼️</span></div>
             <div class="card-body">
               <h3 class="ts-single">Image Captioning</h3>
-              <p>Drop in a photo and BLIP describes what it sees in one sentence.</p>
-              <ul class="tags"><li>Gradio</li><li>BLIP</li><li>PyTorch</li></ul>
-              <a class="btn" data-demo="p1" href="#" target="_blank" rel="noopener">Launch demo →<span class="sr-only"> (image captioning, opens in a new tab)</span></a>
+              <p>Drop in a photo and a vision model describes what it sees in one sentence.</p>
+              <ul class="tags"><li>Flask</li><li>Qwen vision</li><li>Groq</li></ul>
+              <a class="btn" href="/p1/">Launch demo →<span class="sr-only"> (image captioning, opens the demo)</span></a>
             </div>
           </article>
 
@@ -110,9 +110,9 @@
             <div class="card-head"><span class="card-num">P2</span><span class="card-icon bounce" aria-hidden="true">💬</span></div>
             <div class="card-body">
               <h3 class="ts-single">Web Chatbot</h3>
-              <p>Small talk with BlenderBot, running on CPU with a short memory of the conversation.</p>
-              <ul class="tags"><li>Flask</li><li>BlenderBot</li><li>Transformers</li></ul>
-              <a class="btn" data-demo="p2" href="#" target="_blank" rel="noopener">Launch demo →<span class="sr-only"> (web chatbot, opens in a new tab)</span></a>
+              <p>Small talk with a short memory. Say hi in any language and it answers in kind.</p>
+              <ul class="tags"><li>Flask</li><li>gpt-oss</li><li>Groq</li></ul>
+              <a class="btn" href="/p2/">Launch demo →<span class="sr-only"> (web chatbot, opens the demo)</span></a>
             </div>
           </article>
 
@@ -122,7 +122,7 @@
               <h3 class="ts-single">Voice Assistant</h3>
               <p>Talk to it, it answers out loud. Whisper hears you, gpt-oss thinks, gTTS speaks.</p>
               <ul class="tags"><li>Flask</li><li>Groq</li><li>Whisper</li><li>gTTS</li></ul>
-              <a class="btn" data-demo="p3" href="#" target="_blank" rel="noopener">Launch demo →<span class="sr-only"> (voice assistant, opens in a new tab)</span></a>
+              <a class="btn" href="/p3/">Launch demo →<span class="sr-only"> (voice assistant, opens the demo)</span></a>
             </div>
           </article>
 
@@ -131,8 +131,8 @@
             <div class="card-body">
               <h3 class="ts-single">Meeting Assistant</h3>
               <p>Upload a meeting recording, get the transcript plus key points and action items. An example clip is built in.</p>
-              <ul class="tags"><li>Gradio</li><li>Groq</li><li>Whisper</li></ul>
-              <a class="btn" data-demo="p4" href="#" target="_blank" rel="noopener">Launch demo →<span class="sr-only"> (meeting assistant, opens in a new tab)</span></a>
+              <ul class="tags"><li>Flask</li><li>Groq</li><li>Whisper</li></ul>
+              <a class="btn" href="/p4/">Launch demo →<span class="sr-only"> (meeting assistant, opens the demo)</span></a>
             </div>
           </article>
 
@@ -140,9 +140,9 @@
             <div class="card-head"><span class="card-num">P5</span><span class="card-icon wiggle" aria-hidden="true">📄</span></div>
             <div class="card-body">
               <h3 class="ts-single">PDF Data Chatbot</h3>
-              <p>Upload a PDF and ask questions about it. Retrieval-augmented: MiniLM embeddings, Chroma search, LLM answers.</p>
-              <ul class="tags"><li>LangChain</li><li>Chroma</li><li>RAG</li></ul>
-              <a class="btn" data-demo="p5" href="#" target="_blank" rel="noopener">Launch demo →<span class="sr-only"> (PDF data chatbot, opens in a new tab)</span></a>
+              <p>Upload a PDF and ask questions about it. Retrieval-augmented: BM25 finds the right passages, an LLM answers from them.</p>
+              <ul class="tags"><li>BM25</li><li>RAG</li><li>pypdf</li></ul>
+              <a class="btn" href="/p5/">Launch demo →<span class="sr-only"> (PDF data chatbot, opens the demo)</span></a>
             </div>
           </article>
 
@@ -152,12 +152,12 @@
               <h3 class="ts-single">Babel Fish</h3>
               <p>Speak English, hear it back in Spanish, French, Italian or Portuguese. Pick a voice, pick a language.</p>
               <ul class="tags"><li>Flask</li><li>Groq</li><li>gTTS</li></ul>
-              <a class="btn" data-demo="p6" href="#" target="_blank" rel="noopener">Launch demo →<span class="sr-only"> (Babel Fish translator, opens in a new tab)</span></a>
+              <a class="btn" href="/p6/">Launch demo →<span class="sr-only"> (Babel Fish translator, opens the demo)</span></a>
             </div>
           </article>
         </div>
 
-        <p class="notice reveal"><b>Heads up:</b> the demos run on a free server that naps when nobody's around. The first click can take up to a minute to wake it, and the first image or chat request loads its model. After that it's quick.</p>
+        <p class="notice reveal"><b>Heads up:</b> the demos run on free AI quotas, so they are rate-limited and uploads are capped at 4 MB. If one says it is busy, give it a minute and try again.</p>
       </div>
     </section>
 
@@ -172,13 +172,13 @@
           <h2 id="stack-title" class="ts-double">Made <span class="grad-text">with</span></h2>
         </div>
         <ul class="pills reveal">
-          <li class="pill">Python</li><li class="pill">PyTorch</li><li class="pill">Transformers</li><li class="pill">Groq API</li>
-          <li class="pill">Whisper</li><li class="pill">gpt-oss</li><li class="pill">LangChain</li><li class="pill">ChromaDB</li>
-          <li class="pill">Flask</li><li class="pill">Gradio</li><li class="pill">FastAPI</li><li class="pill">Docker</li>
+          <li class="pill">Python</li><li class="pill">Flask</li><li class="pill">Groq API</li><li class="pill">Whisper</li>
+          <li class="pill">gpt-oss</li><li class="pill">Qwen vision</li><li class="pill">BM25 RAG</li><li class="pill">gTTS</li>
+          <li class="pill">pypdf</li><li class="pill">Vercel</li><li class="pill">HTML + CSS</li><li class="pill">Vanilla JS</li>
         </ul>
         <div class="flow">
           <div class="step reveal"><h3>Hear</h3><p>Whisper turns speech into text, for the voice assistant, translator and meeting summaries.</p></div>
-          <div class="step reveal"><h3>Think</h3><p>Hosted LLMs on Groq for answers and summaries. Local models for captions, chat and embeddings.</p></div>
+          <div class="step reveal"><h3>Think</h3><p>Hosted models on Groq for answers, summaries and image captions, plus BM25 search to find the right PDF passages.</p></div>
           <div class="step reveal"><h3>Speak</h3><p>gTTS reads the reply back in the right language, so you can have a conversation instead of typing.</p></div>
         </div>
       </div>
@@ -197,7 +197,7 @@
         <div class="cta-row reveal">
           <a class="btn btn-outline" style="--c:var(--cyan)" data-social="github" href="#" target="_blank" rel="noopener">GitHub</a>
           <a class="btn btn-outline" style="--c:var(--magenta)" data-social="linkedin" href="#" target="_blank" rel="noopener">LinkedIn</a>
-          <a class="btn btn-primary" data-space href="#" target="_blank" rel="noopener">Open all demos</a>
+          <a class="btn btn-primary" href="#projects">Pick a demo</a>
         </div>
       </div>
     </section>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meeting Assistant · GenAI-Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/demo.css">
+</head>
+<body style="--c:var(--yellow);--b:var(--magenta)">
+  <main class="demo">
+    <a class="back" href="/">← GenAI-Portfolio</a>
+    <h1 class="ts">Meeting <span class="grad-text">Assistant</span></h1>
+    <p class="lead">Upload a meeting recording (up to 4 MB) and get the transcript plus key points and action items.</p>
+
+    <section class="panel">
+      <label class="drop" for="file">
+        <input id="file" type="file" accept="audio/*">
+        <span id="hint">🎧 Click to choose an audio file</span>
+      </label>
+      <div class="row">
+        <button id="go" class="btn" disabled>Transcribe &amp; summarize ✨</button>
+        <button id="ex" class="btn ghost" type="button">Use the example clip</button>
+      </div>
+      <p id="status" class="result" role="status" aria-live="polite"></p>
+      <h2 class="sub" hidden id="h-sum">Summary</h2><pre id="summary" class="box" hidden></pre>
+      <h2 class="sub" hidden id="h-tr">Transcript</h2><pre id="transcript" class="box" hidden></pre>
+    </section>
+  </main>
+  <script>
+    const file = document.getElementById("file"), go = document.getElementById("go"), ex = document.getElementById("ex");
+    const status = document.getElementById("status");
+    const parts = ["h-sum", "summary", "h-tr", "transcript"];
+    file.addEventListener("change", () => {
+      go.disabled = !file.files[0];
+      document.getElementById("hint").textContent = file.files[0] ? "🎧 " + file.files[0].name : "🎧 Click to choose an audio file";
+    });
+    async function run(url, body) {
+      go.disabled = ex.disabled = true; status.textContent = "Listening… this can take 10–30 seconds.";
+      parts.forEach(i => document.getElementById(i).hidden = true);
+      try {
+        const r = await fetch(url, { method: "POST", body });
+        const d = await r.json();
+        if (!d.summary) { status.textContent = d.error || "Something went wrong."; }
+        else {
+          status.textContent = "";
+          document.getElementById("summary").textContent = d.summary;
+          document.getElementById("transcript").textContent = d.transcript;
+          parts.forEach(i => document.getElementById(i).hidden = false);
+        }
+      } catch { status.textContent = "Network error, try again."; }
+      ex.disabled = false; go.disabled = !file.files[0];
+    }
+    go.addEventListener("click", () => { const fd = new FormData(); fd.append("file", file.files[0]); run("process", fd); });
+    ex.addEventListener("click", () => run("process?example=1"));
+  </script>
+</body>
+</html>

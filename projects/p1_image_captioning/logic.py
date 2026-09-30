@@ -1,23 +1,21 @@
-from functools import lru_cache
+import base64
+
+from groq_client import chat_messages, VISION_MODEL
+
+ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
 
 
-@lru_cache(maxsize=1)
-def _load():
-    # Loaded on first request so the hub app starts fast and idle demos cost no RAM.
-    from transformers import BlipProcessor, BlipForConditionalGeneration
-
-    name = "Salesforce/blip-image-captioning-base"
-    return BlipProcessor.from_pretrained(name), BlipForConditionalGeneration.from_pretrained(name)
-
-
-def generate_caption(image):
-    """Take a PIL Image, return the BLIP caption."""
-    if image is None:
-        return "Upload a picture first."
-    try:
-        processor, model = _load()
-        inputs = processor(images=image, return_tensors="pt")
-        outputs = model.generate(**inputs)
-        return processor.decode(outputs[0], skip_special_tokens=True)
-    except Exception as e:
-        return f"Terjadi kesalahan: {e}"
+def generate_caption(image_bytes, mime):
+    """Describe an image in one sentence with a Groq vision model."""
+    data_url = f"data:{mime};base64,{base64.b64encode(image_bytes).decode()}"
+    return chat_messages(
+        [{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Write a short, vivid caption for this image: one sentence, plain text, no preamble."},
+                {"type": "image_url", "image_url": {"url": data_url}},
+            ],
+        }],
+        model=VISION_MODEL,
+        max_tokens=200,
+    )

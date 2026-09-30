@@ -6,6 +6,8 @@ const botRepeatButtonIDToIndexMap = {};
 const userRepeatButtonIDToRecordingMap = {};
 // Work both at "/" (local) and under a hub prefix such as "/p3/".
 const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+// AI replies and typed text are untrusted: escape before inserting as HTML.
+const escapeHtml = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function showBotLoadingAnimation() {
   await sleep(200);
@@ -30,14 +32,18 @@ function hideUserLoadingAnimation() {
 }
 
 
+// The server keeps no state: the PDF's text chunks and the chat history live here.
+let docChunks = [];
+const chatHistory = [];
+
 const processUserMessage = async (userMessage) => {
   let response = await fetch(baseUrl + "/process-message", {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify({ userMessage: userMessage }),
+    body: JSON.stringify({ userMessage: userMessage, chunks: docChunks, history: chatHistory }),
   });
   response = await response.json();
-  console.log(response);
+  if (response.botResponse && docChunks.length) chatHistory.push([userMessage, response.botResponse]);
   return response;
 };
 
@@ -66,7 +72,7 @@ const populateUserMessage = (userMessage, userRecording) => {
     $("#message-list").append(
       `<div class='message-line my-text'><div class='message-box my-text${
         !lightMode ? " dark" : ""
-      }'><div class='me'>${userMessage}</div></div></div>`
+      }'><div class='me'>${escapeHtml(userMessage)}</div></div></div>`
     );
 
   scrollToBottom();
@@ -122,7 +128,7 @@ const populateBotResponse = async (userMessage) => {
       }
 
       response = await response.json();
-      console.log('/process-document', response)
+      if (response.chunks) docChunks = response.chunks;
       renderBotResponse(response, '')
     });
 
@@ -132,12 +138,14 @@ const populateBotResponse = async (userMessage) => {
 };
 
 const renderBotResponse = (response, uploadButtonHtml) => {
+  // Server errors (e.g. 413 for files over 4 MB) arrive as {error}; show them as a normal bot message.
+  if (!response.botResponse) response = { botResponse: response.error || "Something went wrong, please try again." };
   responses.push(response);
 
   hideBotLoadingAnimation();
 
   $("#message-list").append(
-    `<div class='message-line'><div class='message-box${!lightMode ? " dark" : ""}'>${response.botResponse.trim()}<br>${uploadButtonHtml}</div></div>`
+    `<div class='message-line'><div class='message-box${!lightMode ? " dark" : ""}'>${escapeHtml(response.botResponse.trim())}<br>${uploadButtonHtml}</div></div>`
   );
 
   scrollToBottom();

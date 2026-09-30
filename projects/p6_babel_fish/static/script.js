@@ -7,6 +7,8 @@ const botRepeatButtonIDToIndexMap = {};
 const userRepeatButtonIDToRecordingMap = {};
 // Work both at "/" (local) and under a hub prefix such as "/p3/".
 const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+// AI replies and typed text are untrusted: escape before inserting as HTML.
+const escapeHtml = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function showBotLoadingAnimation() {
   await sleep(500);
@@ -135,7 +137,7 @@ const populateUserMessage = (userMessage, userRecording) => {
     $("#message-list").append(
       `<div class='message-line my-text'><div class='message-box my-text${
         !lightMode ? " dark" : ""
-      }'><div class='me'>${userMessage}</div></div>
+      }'><div class='me'>${escapeHtml(userMessage)}</div></div>
             <button id='${userRepeatButtonID}' class='btn volume repeat-button' onclick='userRepeatButtonIDToRecordingMap[this.id].play()'><i class='fa fa-volume-up'></i></button>
             </div>`
     );
@@ -143,7 +145,7 @@ const populateUserMessage = (userMessage, userRecording) => {
     $("#message-list").append(
       `<div class='message-line my-text'><div class='message-box my-text${
         !lightMode ? " dark" : ""
-      }'><div class='me'>${userMessage}</div></div></div>`
+      }'><div class='me'>${escapeHtml(userMessage)}</div></div></div>`
     );
   }
 
@@ -163,9 +165,7 @@ const populateBotResponse = async (userMessage) => {
   $("#message-list").append(
     `<div class='message-line'><div class='message-box${
       !lightMode ? " dark" : ""
-    }'>${
-      response.watsonxResponseText
-    }</div><button id='${repeatButtonID}' class='btn volume repeat-button' onclick='playResponseAudio("data:audio/wav;base64," + responses[botRepeatButtonIDToIndexMap[this.id]].watsonxResponseSpeech);console.log(this.id)'><i class='fa fa-volume-up'></i></button></div>`
+    }'>${escapeHtml(response.watsonxResponseText)}</div><button id='${repeatButtonID}' class='btn volume repeat-button' onclick='playResponseAudio("data:audio/wav;base64," + responses[botRepeatButtonIDToIndexMap[this.id]].watsonxResponseSpeech);console.log(this.id)'><i class='fa fa-volume-up'></i></button></div>`
   );
 
   playResponseAudio("data:audio/wav;base64," + response.watsonxResponseSpeech);

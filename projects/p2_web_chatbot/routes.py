@@ -1,12 +1,8 @@
-import uuid
+from flask import Blueprint, render_template, request, jsonify
 
-from flask import Blueprint, render_template, request, jsonify, session
 from .logic import generate_response
 
 bp = Blueprint("p2", __name__, template_folder="templates")
-
-# Per-visitor chat history, keyed by the session id the hub app assigns.
-_histories = {}
 
 
 @bp.route("/")
@@ -16,8 +12,9 @@ def index():
 
 @bp.route("/chatbot", methods=["POST"])
 def chatbot():
-    sid = session.setdefault("sid", uuid.uuid4().hex)
-    user_input = (request.get_json(silent=True) or {}).get("message", "")
-    response, history = generate_response(user_input, _histories.get(sid, []))
-    _histories[sid] = history
-    return jsonify({"response": response})
+    data = request.get_json(silent=True) or {}
+    message = str(data.get("message", "")).strip()[:1000]
+    if not message:
+        return jsonify({"error": "Empty message."}), 400
+    history = data.get("history") if isinstance(data.get("history"), list) else []
+    return jsonify({"response": generate_response(message, history)})

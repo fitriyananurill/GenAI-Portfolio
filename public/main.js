@@ -1,12 +1,5 @@
 (function () {
   var cfg = window.PORTFOLIO || {};
-  var space = (cfg.SPACE_URL || "").replace(/\/$/, "");
-
-  // Point every demo link at the Hugging Face Space.
-  document.querySelectorAll("[data-demo]").forEach(function (a) {
-    a.href = space + "/" + a.getAttribute("data-demo") + "/";
-  });
-  document.querySelectorAll("[data-space]").forEach(function (a) { a.href = space + "/"; });
 
   // Show social buttons only when a link is configured.
   [["github", cfg.GITHUB], ["linkedin", cfg.LINKEDIN]].forEach(function (pair) {

@@ -1,35 +1,50 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Chatbot BlenderBot</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Chatbot · GenAI-Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Outfit:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/demo.css">
 </head>
-<body>
-    <h1>Chat dengan Bot</h1>
-    <div id="chat-box" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px;"></div>
-    <input type="text" id="user-input" placeholder="Ketik pesan..." style="width:80%;">
-    <button onclick="sendMessage()">Kirim</button>
+<body style="--c:var(--cyan);--b:var(--orange)">
+  <main class="demo">
+    <a class="back" href="/">← GenAI-Portfolio</a>
+    <h1 class="ts">Web <span class="grad-text">Chatbot</span></h1>
+    <p class="lead">Small talk with a short memory. Say hi in any language.</p>
 
-    <script>
-        function sendMessage() {
-            const inputBox = document.getElementById("user-input");
-            const message = inputBox.value;
-            if (!message) return;
-
-            const chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML += "<p><b>Kamu:</b> " + message + "</p>";
-            inputBox.value = "";
-
-            fetch("chatbot", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                chatBox.innerHTML += "<p><b>Bot:</b> " + data.response + "</p>";
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
-    </script>
+    <section class="panel">
+      <div id="log" class="log" role="log" aria-live="polite"></div>
+      <form id="form" class="row">
+        <label class="sr-only" for="msg">Your message</label>
+        <input id="msg" type="text" autocomplete="off" placeholder="Type a message…" maxlength="1000" required>
+        <button class="btn" type="submit">Send</button>
+      </form>
+    </section>
+  </main>
+  <script>
+    const log = document.getElementById("log"), form = document.getElementById("form"), msg = document.getElementById("msg");
+    const history = [];
+    function add(who, text) {
+      const p = document.createElement("p"); p.className = who;
+      const b = document.createElement("b"); b.textContent = who === "me" ? "You: " : "Bot: ";
+      p.append(b, document.createTextNode(text)); log.append(p); log.scrollTop = log.scrollHeight;
+      return p;
+    }
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = msg.value.trim(); if (!text) return;
+      msg.value = ""; add("me", text);
+      const wait = add("bot", "…");
+      try {
+        const r = await fetch("chatbot", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, history }) });
+        const d = await r.json();
+        const reply = d.response || d.error || "Something went wrong.";
+        wait.lastChild.textContent = reply;
+        if (d.response) history.push({ role: "user", content: text }, { role: "assistant", content: reply });
+      } catch { wait.lastChild.textContent = "Network error, try again."; }
+    });
+  </script>
 </body>
 </html>

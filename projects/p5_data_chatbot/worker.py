@@ -1,116 +1,73 @@
-import os
-import sys
-import logging
-from functools import lru_cache
+"""PDF question answering without a vector database.
 
-# scikit-learn is optional for transformers, and its compiled files get blocked by
-# Windows Smart App Control. Hide it so transformers doesn't try to import it.
-sys.modules.setdefault("sklearn", None)
+Serverless hosts keep no state between requests, so the browser holds the PDF's
+text chunks and sends them with each question. Retrieval is BM25 (pure Python);
+the answer comes from a Groq LLM.
+"""
+import math
+import re
+from collections import Counter
 
-import torch
-from dotenv import load_dotenv
+from pypdf import PdfReader
 
-from langchain.chains import RetrievalQA
-from langchain_core.embeddings import Embeddings
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.vectorstores import Chroma
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_groq import ChatGroq
-from transformers import AutoModel, AutoTokenizer
+from groq_client import chat
 
-load_dotenv()
+CHUNK_CHARS = 1000
+CHUNK_OVERLAP = 100
+MAX_PAGES = 60
+MAX_TOTAL_CHARS = 300_000
+TOP_K = 6
 
-logger = logging.getLogger(__name__)
-
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-
-# Per-visitor state: session id -> {"chain": RetrievalQA, "history": [(q, a), ...]}
-_sessions = {}
+_WORD = re.compile(r"\w+", re.UNICODE)
 
 
-class MiniLMEmbeddings(Embeddings):
-    """Sentence embeddings via transformers + torch (mean pooling, L2-normalized).
+def extract_chunks(stream):
+    """Read a PDF and return overlapping text chunks (list[str])."""
+    reader = PdfReader(stream)
+    text = "\n".join((page.extract_text() or "") for page in reader.pages[:MAX_PAGES])
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()[:MAX_TOTAL_CHARS]
 
-    Avoids the sentence-transformers package, which imports scikit-learn
-    (its DLLs can be blocked by Windows Smart App Control).
-    """
-
-    def __init__(self, model_name, device):
-        self.device = device
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name).to(device).eval()
-
-    def _embed(self, texts):
-        vectors = []
-        for i in range(0, len(texts), 32):
-            batch = self.tokenizer(
-                texts[i:i + 32], padding=True, truncation=True,
-                max_length=256, return_tensors="pt",
-            ).to(self.device)
-            with torch.no_grad():
-                hidden = self.model(**batch).last_hidden_state
-            mask = batch["attention_mask"].unsqueeze(-1).float()
-            pooled = (hidden * mask).sum(1) / mask.sum(1).clamp(min=1e-9)
-            pooled = torch.nn.functional.normalize(pooled, dim=1)
-            vectors.extend(pooled.cpu().tolist())
-        return vectors
-
-    def embed_documents(self, texts):
-        return self._embed(texts)
-
-    def embed_query(self, text):
-        return self._embed([text])[0]
+    chunks, step = [], CHUNK_CHARS - CHUNK_OVERLAP
+    for start in range(0, len(text), step):
+        piece = text[start:start + CHUNK_CHARS].strip()
+        if piece:
+            chunks.append(piece)
+    return chunks
 
 
-@lru_cache(maxsize=1)
-def _llm():
-    return ChatGroq(
-        model="openai/gpt-oss-120b",
-        api_key=os.environ.get("GROQ_API_KEY"),
-        temperature=0.1,
-        max_tokens=1024,
-        reasoning_effort="low",
+def _tokens(text):
+    return _WORD.findall(text.lower())
+
+
+def retrieve(question, chunks, k=TOP_K):
+    """Rank chunks against the question with BM25 and return the best k in document order."""
+    docs = [_tokens(c) for c in chunks]
+    n = len(docs)
+    avg_len = (sum(len(d) for d in docs) / n) or 1
+    df = Counter(t for d in docs for t in set(d))
+    query = set(_tokens(question))
+
+    def score(doc):
+        tf, s = Counter(doc), 0.0
+        for t in query:
+            if t not in tf:
+                continue
+            idf = math.log(1 + (n - df[t] + 0.5) / (df[t] + 0.5))
+            s += idf * tf[t] * 2.5 / (tf[t] + 1.5 * (0.25 + 0.75 * len(doc) / avg_len))
+        return s
+
+    ranked = sorted(range(n), key=lambda i: score(docs[i]), reverse=True)[:k]
+    return [chunks[i] for i in sorted(ranked)]
+
+
+def answer(question, chunks, history):
+    context = "\n---\n".join(retrieve(question, chunks))
+    system = (
+        "Answer the user's question using only the document excerpts below. "
+        "If the answer is not in the excerpts, say you don't know. Reply in the user's language.\n\n"
+        f"Document excerpts:\n{context}"
     )
-
-
-@lru_cache(maxsize=1)
-def _embeddings():
-    return MiniLMEmbeddings("sentence-transformers/all-MiniLM-L6-v2", DEVICE)
-
-
-def process_document(session_id, document_path):
-    logger.info("Loading document: %s", document_path)
-    documents = PyPDFLoader(document_path).load()
-
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64)
-    texts = splitter.split_documents(documents)
-    logger.info("Split into %d chunks", len(texts))
-
-    # One Chroma collection per visitor so uploads never mix between sessions.
-    db = Chroma.from_documents(texts, embedding=_embeddings(), collection_name=f"s{session_id}")
-
-    chain = RetrievalQA.from_chain_type(
-        llm=_llm(),
-        chain_type="stuff",
-        retriever=db.as_retriever(search_type="mmr", search_kwargs={"k": 6, "lambda_mult": 0.25}),
-        return_source_documents=False,
-        input_key="question",
-    )
-    _sessions[session_id] = {"chain": chain, "history": []}
-
-
-def process_prompt(session_id, prompt):
-    state = _sessions.get(session_id)
-    if state is None:
-        return "Please upload a PDF first, then ask me about it."
-
-    history = state["history"]
-    if history:
-        history_text = "\n".join(f"Q: {q}\nA: {a}" for q, a in history[-3:])
-        full_prompt = f"Previous conversation:\n{history_text}\n\nNew question: {prompt}"
-    else:
-        full_prompt = prompt
-
-    answer = state["chain"].invoke({"question": full_prompt})["result"]
-    history.append((prompt, answer))
-    return answer
+    turns = "\n".join(f"Q: {q}\nA: {a}" for q, a in history[-3:])
+    prompt = f"Previous conversation:\n{turns}\n\nNew question: {question}" if turns else question
+    return chat(system, prompt, max_tokens=1024)

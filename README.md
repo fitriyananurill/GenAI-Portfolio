@@ -1,54 +1,50 @@
----
-title: GenAI-Portfolio
-emoji: 🚀
-colorFrom: pink
-colorTo: purple
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # GenAI-Portfolio
 
-Six small generative-AI projects, one repo.
+Six small generative-AI projects behind one domain. Everything runs on hosted APIs (Groq), so the whole site deploys to Vercel's free tier.
 
-| # | Project | Stack |
-|---|---------|-------|
-| p1 | Image captioning | Gradio, BLIP |
-| p2 | Web chatbot | Flask, BlenderBot |
-| p3 | Voice assistant | Flask, Groq (Whisper + gpt-oss), gTTS |
-| p4 | Meeting assistant | Gradio, Groq (Whisper + gpt-oss) |
-| p5 | PDF data chatbot | LangChain, Chroma, MiniLM, Groq |
-| p6 | Babel Fish translator | Flask, Groq, gTTS |
+| # | Project | What it does | Stack |
+|---|---------|--------------|-------|
+| p1 | Image captioning | Describes an uploaded photo | Flask, Groq vision (Qwen) |
+| p2 | Web chatbot | Small talk with short memory | Flask, Groq (gpt-oss) |
+| p3 | Voice assistant | Speak, hear the answer | Flask, Groq (Whisper + gpt-oss), gTTS |
+| p4 | Meeting assistant | Transcript + summary of a recording | Flask, Groq (Whisper + gpt-oss) |
+| p5 | PDF data chatbot | Ask questions about a PDF | Flask, BM25 retrieval, Groq, pypdf |
+| p6 | Babel Fish | Speak English, hear it translated | Flask, Groq, gTTS |
 
 ## Layout
 
 ```
-app.py            hub app: serves p1-p6 under /p1 ... /p6 (uvicorn app:app)
+public/           static landing page + shared demo CSS (served by Vercel's CDN)
+api/index.py      Vercel entrypoint, exposes the Flask app
+app.py            Flask app: mounts p1-p6 under /p1 ... /p6, rate limit, error handlers
 config.py         loads .env
-groq_client.py    shared Groq REST client
-projects/         the six projects
-site/             static landing page (deployed to Vercel)
-Dockerfile        demos image (deployed to Hugging Face Spaces)
+groq_client.py    shared Groq REST client (chat, vision, transcription)
+projects/         the six projects (one Flask blueprint each)
+vercel.json       function timeout + rewrite to the Flask app
 ```
 
 ## Run locally
 
 ```bash
-python -m venv venv && venv\Scripts\activate     # Windows
+python -m venv venv
+venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 echo GROQ_API_KEY=your_key > .env
-uvicorn app:app --port 7860                      # http://127.0.0.1:7860
+python app.py                  # http://127.0.0.1:8000
 ```
 
-## Deploy (both free)
+## Deploy to Vercel (free)
 
-**Demos -> Hugging Face Spaces** (Docker, CPU Basic: 2 vCPU / 16 GB)
-1. Create a Space at huggingface.co/new-space, SDK **Docker**.
-2. Add a Space secret `GROQ_API_KEY` (and optionally `SITE_URL` = your Vercel URL).
-3. Push this repo to the Space's git remote. It builds from `Dockerfile`.
+1. Push this repo to GitHub.
+2. On vercel.com: **Add New -> Project**, import the repo. Leave Framework Preset on "Other" / auto-detected and leave Root Directory as the repo root. No build command.
+3. **Settings -> Environment Variables**: add `GROQ_API_KEY`. Redeploy.
+4. **Settings -> Domains** to attach your own domain.
 
-**Landing page -> Vercel**
-1. Put your Space URL into `site/config.js` (`SPACE_URL`), plus your name and links.
-2. Import the repo on vercel.com and set **Root Directory** to `site`. No build step.
-3. Add your domain under Project -> Settings -> Domains.
+Edit `public/config.js` for your name and social links.
+
+## Limits worth knowing
+
+- Uploads are capped at 4 MB (Vercel's request limit is 4.5 MB). Images are shrunk in the browser first.
+- Functions time out after 60 s. Long recordings in p4 may not finish.
+- Serverless keeps no state, so p2 and p5 keep chat history and PDF text in the browser and send them with each request.
+- Rate limiting is in memory, per server instance: enough to stop one client hammering the demo, not a hard guarantee. Watch your Groq usage.
