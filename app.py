@@ -4,8 +4,8 @@
     /p2  web chatbot           /p5  PDF data chatbot
     /p3  voice assistant       /p6  Babel Fish translator
 
-Static pages (landing, shared CSS) live in public/. On Vercel the CDN serves them
-and api/index.py serves everything else; locally this app serves both.
+Static pages (landing, shared CSS) live in web/ and are served by Flask itself,
+so Vercel and local runs behave the same.
 
 Run locally:  python app.py   ->  http://127.0.0.1:8000
 """
@@ -23,7 +23,7 @@ from projects.p4_meeting_assistant.app_interface import bp as p4
 from projects.p5_data_chatbot.server import bp as p5
 from projects.p6_babel_fish.server import bp as p6
 
-app = Flask(__name__, static_folder="public", static_url_path="")
+app = Flask(__name__, static_folder="web", static_url_path="")
 # Vercel rejects request bodies above 4.5 MB; fail the same way locally.
 app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 

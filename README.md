@@ -14,13 +14,12 @@ Six small generative-AI projects behind one domain. Everything runs on hosted AP
 ## Layout
 
 ```
-public/           static landing page + shared demo CSS (served by Vercel's CDN)
-api/index.py      Vercel entrypoint, exposes the Flask app
-app.py            Flask app: mounts p1-p6 under /p1 ... /p6, rate limit, error handlers
+web/              static landing page + shared demo CSS (served by Flask)
+app.py            Flask app (Vercel runs it directly): mounts p1-p6 under /p1 ... /p6, rate limit, errors
 config.py         loads .env
 groq_client.py    shared Groq REST client (chat, vision, transcription)
 projects/         the six projects (one Flask blueprint each)
-vercel.json       function timeout + rewrite to the Flask app
+vercel.json       empty on purpose: Vercel auto-detects Flask from app.py
 ```
 
 ## Run locally
@@ -40,11 +39,11 @@ python app.py                  # http://127.0.0.1:8000
 3. **Settings -> Environment Variables**: add `GROQ_API_KEY`. Redeploy.
 4. **Settings -> Domains** to attach your own domain.
 
-Edit `public/config.js` for your name and social links.
+Edit `web/config.js` for your name and social links.
 
 ## Limits worth knowing
 
 - Uploads are capped at 4 MB (Vercel's request limit is 4.5 MB). Images are shrunk in the browser first.
-- Functions time out after 60 s. Long recordings in p4 may not finish.
+- Vercel limits how long a function may run (depends on your plan). Long recordings in p4 may not finish.
 - Serverless keeps no state, so p2 and p5 keep chat history and PDF text in the browser and send them with each request.
 - Rate limiting is in memory, per server instance: enough to stop one client hammering the demo, not a hard guarantee. Watch your Groq usage.
