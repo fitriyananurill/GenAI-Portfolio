@@ -1,0 +1,140 @@
+/* Maximalism theme for the Bootstrap chat demos (p3, p5, p6).
+   Loaded AFTER bootstrap and each project's style.css, so it overrides them; the chat JS is untouched. */
+:root {
+  --bg: #0D0D1A; --fg: #FFFFFF; --muted: #2D1B4E;
+  --magenta: #FF3AF2; --cyan: #00F5D4; --yellow: #FFE600; --orange: #FF6B35; --purple: #7B2FFF;
+  --c: var(--magenta); --b: var(--yellow);
+}
+
+body, body.dark-mode {
+  min-height: 100vh; color: var(--fg); background-color: var(--bg);
+  font: 500 1.05rem/1.6 "DM Sans", system-ui, sans-serif;
+  background-image:
+    radial-gradient(circle, rgba(255, 58, 242, .35) 1px, transparent 1px),
+    repeating-linear-gradient(45deg, transparent 0 14px, rgba(255, 230, 0, .05) 14px 28px),
+    radial-gradient(ellipse at 15% 20%, rgba(255, 58, 242, .18), transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(0, 245, 212, .15), transparent 50%);
+  background-size: 28px 28px, auto, auto, auto;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+.container { max-width: 980px; position: relative; z-index: 10; padding-bottom: 72px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 3px dashed var(--fg) !important; outline-offset: 4px; box-shadow: 0 0 0 4px var(--magenta), 0 0 0 8px var(--cyan) !important; border-radius: 12px; }
+
+/* ---- header ---- */
+.back {
+  display: inline-block; margin: 28px 0 8px; padding: .7rem 1.2rem; color: var(--fg); text-decoration: none;
+  font: 800 .8rem/1 "Outfit", system-ui, sans-serif; letter-spacing: .2em; text-transform: uppercase;
+  border: 3px dashed var(--cyan); border-radius: 999px; background: rgba(45, 27, 78, .6);
+  transition: transform .25s cubic-bezier(.68, -.55, .265, 1.55);
+}
+.back:hover { color: var(--fg); text-decoration: none; transform: scale(1.06) rotate(-2deg); border-style: solid; }
+
+h1 {
+  font: 900 clamp(2.6rem, 9vw, 5rem)/.95 "Outfit", system-ui, sans-serif !important;
+  text-transform: uppercase; letter-spacing: -.03em; text-align: left !important; margin: 14px 0 14px;
+  text-shadow: 2px 2px 0 var(--purple), 4px 4px 0 var(--magenta), 6px 6px 0 var(--cyan);
+}
+.grad-text {
+  background: linear-gradient(90deg, var(--magenta), var(--cyan), var(--yellow), var(--magenta)); background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  text-shadow: none; animation: shift 4s ease infinite;
+}
+.lead-text { font-size: 1.2rem; max-width: 640px; text-align: left !important; margin-bottom: 8px; }
+.hint-text { font-size: 1rem !important; text-align: left !important; color: rgba(255, 255, 255, .85); }
+
+/* the old light/dark switch: this page is dark by design */
+.custom-control { display: none !important; }
+.col-12.text-center.d-flex.justify-content-around { padding: 0 15px !important; justify-content: flex-start !important; margin-bottom: 18px; }
+
+/* chat column uses the full container width so it lines up with the title */
+.col-md-8 { flex: 0 0 100% !important; max-width: 100% !important; }
+.col-12.text-center.d-flex.justify-content-around .d-inline-block { text-align: left; }
+
+/* ---- voice picker ---- */
+.voice-options-label {
+  display: block; margin-bottom: 6px; font: 800 .8rem/1 "Outfit", system-ui, sans-serif;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--cyan);
+}
+#voice-options {
+  min-height: 48px; max-width: 100%; padding: 0 1.2rem; color: var(--fg); cursor: pointer;
+  font: 700 1rem "DM Sans", system-ui, sans-serif;
+  background: rgba(45, 27, 78, .85); border: 4px solid var(--c); border-radius: 999px;
+}
+#voice-options:hover { background: var(--muted); }
+#voice-options option { background: var(--bg); color: var(--fg); }
+
+/* ---- chat window ---- */
+#chat-window {
+  padding: 22px !important;
+  background: rgba(45, 27, 78, .85); backdrop-filter: blur(4px);
+  border: 4px solid var(--b); border-radius: 24px;
+  box-shadow: 8px 8px 0 var(--c), 16px 16px 0 var(--purple);
+  scrollbar-color: var(--c) transparent;
+}
+.message-line { width: 82%; }
+.message-line.my-text { width: 100%; }
+.message-box, .message-box.dark {
+  padding: 12px 16px; color: var(--fg); font-size: 1.05rem;
+  background: rgba(13, 13, 26, .75); border: 3px solid var(--c); border-radius: 18px; border-top-left-radius: 0;
+}
+.message-box.my-text, .message-box.my-text.dark {
+  margin-left: 0; background: rgba(0, 245, 212, .12); border-color: var(--cyan);
+}
+.loading-dots, .loading-dots.my-loading.dark { background: rgba(13, 13, 26, .75); border: 3px solid var(--c); }
+.loading-dots.my-loading { background: rgba(0, 245, 212, .12); border-color: var(--cyan); }
+.dot { background: var(--yellow); }
+
+/* ---- input bar ---- */
+.input-group {
+  margin-top: 26px !important; border: 4px solid var(--c) !important; border-radius: 999px; overflow: hidden;
+  background: rgba(45, 27, 78, .85); box-shadow: 6px 6px 0 var(--b);
+}
+.input-group:focus-within { box-shadow: 0 0 0 4px var(--magenta), 0 0 0 8px var(--cyan); }
+#message-input {
+  min-height: 54px; padding-left: 22px !important; color: var(--fg) !important;
+  font: 700 1.05rem "DM Sans", system-ui, sans-serif; background: transparent !important;
+}
+#message-input:focus { outline: none; box-shadow: none !important; }
+#message-input::placeholder { color: rgba(255, 255, 255, .5); }
+#send-button, #reset-button { align-items: center; padding: 10px 18px; transition: transform .25s cubic-bezier(.68, -.55, .265, 1.55); }
+#send-button:hover, #reset-button:hover { transform: scale(1.2) rotate(-6deg); }
+#send-button:disabled { opacity: .5; cursor: not-allowed; }
+.microphone i, .send i, .volume i, .reset i, #reset-button i { color: var(--yellow) !important; }
+.microphone.recording i { color: var(--magenta) !important; }
+
+.repeat-button {
+  flex: 0 0 auto; align-self: flex-start; margin: 0 10px; padding: 6px 12px; line-height: 1;
+  border: 3px solid var(--c) !important; border-radius: 999px; background: rgba(13, 13, 26, .75);
+  transition: transform .25s cubic-bezier(.68, -.55, .265, 1.55);
+}
+.repeat-button:hover { transform: scale(1.15) rotate(-4deg); background: var(--muted); }
+
+/* p5 upload button rendered inside a bot message */
+#upload-button {
+  min-height: 44px; padding: 0 1.4rem !important; margin-top: 14px; color: var(--fg); cursor: pointer;
+  font: 900 .8rem/1 "Outfit", system-ui, sans-serif !important; letter-spacing: .15em; text-transform: uppercase;
+  background: linear-gradient(90deg, var(--magenta), var(--purple), var(--cyan)); background-size: 200% 100%;
+  border: 3px solid var(--yellow) !important; border-radius: 999px !important; box-shadow: 4px 4px 0 var(--magenta);
+  transition: transform .3s cubic-bezier(.68, -.55, .265, 1.55), background-position .4s;
+}
+#upload-button:hover:not(:disabled) { transform: scale(1.08) rotate(-2deg); background-position: 100% 0; }
+#upload-button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ---- floating decorations ---- */
+.deco { position: fixed; z-index: 5; pointer-events: none; line-height: 1; user-select: none; display: none; }
+@media (min-width: 1300px) { .deco { display: block; } }
+.float { animation: float 6s ease-in-out infinite; }
+.wiggle { animation: wiggle 1s ease-in-out infinite; }
+.bounce { animation: bounce-subtle 2s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(5deg); } }
+@keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes bounce-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+@media (max-width: 767px) {
+  #chat-window { padding: 16px !important; }
+  .message-line { width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition-duration: .15s !important; } }

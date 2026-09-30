@@ -192,6 +192,10 @@ $(document).ready(function () {
       // Reset the responses array
       responses.length = 0;
 
+      // Forget the uploaded PDF and the conversation (the server keeps no state)
+      docChunks = [];
+      chatHistory.length = 0;
+
       // Reset isFirstMessage flag
       isFirstMessage = true;
 
